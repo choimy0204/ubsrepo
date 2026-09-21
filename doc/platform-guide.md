@@ -686,3 +686,54 @@ Launcher(`PlatformUpdater.Settings`)가 같은 이름으로 읽고 쓴다. **이
 - 업데이트는 **덮어쓰기**다. 쓰지 않게 된 옛 파일까지 정리하려면 `publish-platform.ps1`로 `bin`을
   비우고 다시 채운 뒤 `dist`를 올리면 된다.
 
+---
+
+## 13. 사내 API 호출 — `UbisamBase.Core.Net.ApiService`
+
+토큰이 필요한 사내 API를 **앱이 대신 호출해** 응답 본문(JSON 문자열)만 돌려준다. 화면(WebView2 등)이
+직접 부르면 토큰이 그 문서에 섞여 들어가므로, 앱이 부르고 값만 넘기는 구조를 공용으로 둔 것이다.
+브라우저에서 막히는 CORS도 이 경로로는 문제가 되지 않는다.
+
+```csharp
+using UbisamBase.Core.Net;
+
+var json = await ApiService.Current.FetchAsync(url);          // 실패하면 예외
+var (ok, body, error) = await ApiService.Current.TryFetchAsync(url);   // 예외 대신 결과로 받기
+```
+
+- 인증 헤더는 서비스 안에서 붙는다 — **부르는 쪽은 토큰을 몰라도 된다.**
+- 같은 주소를 `MinIntervalMs`(기본 1초) 안에 다시 부르면 서버를 때리지 않고 직전 응답을 돌려준다.
+  화면 갱신 주기가 짧아도 호출 제한에 걸리지 않게 하기 위한 것이다.
+- 로그에는 주소의 `?` 앞부분만 남긴다(쿼리에 토큰이 섞인 경우 대비). 응답 본문도 남기지 않는다.
+
+### 13-1. 설정 — `D:\UbisamConfig\Settings\ApiSettings.json`
+
+```json
+{
+  "AuthMode": "BearerHeader",
+  "HeaderName": "X-Api-Key",
+  "Token": "...",
+  "MinIntervalMs": 1000,
+  "TimeoutSeconds": 10
+}
+```
+
+| AuthMode | 붙는 헤더 |
+| --- | --- |
+| `None` | 없음(사내망 IP 제한 등) |
+| `BearerHeader` | `Authorization: Bearer {Token}` |
+| `CustomHeader` | `{HeaderName}: {Token}` |
+| `Cookie` | `Cookie: {Token}` |
+
+**토큰은 이 파일에만 있다.** 내보낸 HTML·`.ub` 같은 산출물에는 들어가지 않는다.
+
+### 13-2. 내보낸 파일에서는 인증 API를 못 부른다
+
+앱 밖으로 내보낸 HTML은 혼자 도는 파일이라 이 서비스가 없다. 그래서:
+
+- **앱 안에서 볼 때** → `ApiService`로 최신 값
+- **내보낸 파일을 남에게 줄 때** → 인증이 필요한 API는 호출 불가, 내보낼 때 담긴 마지막 값이 보인다
+  (인증이 없는 공개 API라면 내보낸 파일에서도 실시간으로 돈다)
+
+이는 제약이라기보다 의도된 동작이다 — 토큰이 파일에 들어가지 않기 때문이다.
+

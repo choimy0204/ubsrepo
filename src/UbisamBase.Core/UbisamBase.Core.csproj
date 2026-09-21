@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <Reference Include="System.IO.Compression.FileSystem" />
+    <!-- 사내 API 호출(ApiService)용 — net48에서는 명시적으로 참조해야 HttpClient를 쓸 수 있다. -->
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
