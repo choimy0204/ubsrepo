@@ -117,20 +117,10 @@ internal static class PlatformUpdater
             }
 
             // 3) 자동 업데이트가 아니면 물어본다.
-            if (!settings.AutoUpdate)
+            if (!settings.AutoUpdate && !UpdateDialog.Ask(localVersion, remoteVersion))
             {
-                var answer = MessageBox.Show(
-                    "새 플랫폼 버전이 있습니다.\n\n" +
-                    "지금 버전 : " + (string.IsNullOrEmpty(localVersion) ? "(알 수 없음)" : localVersion) + "\n" +
-                    "새 버전   : " + remoteVersion + "\n\n" +
-                    "지금 업데이트하고 실행할까요?",
-                    "UbisamBase 업데이트", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (answer != MessageBoxResult.Yes)
-                {
-                    // 기록을 남기지 않는다 — 다음에 켤 때 다시 물어본다.
-                    return;
-                }
+                // 기록을 남기지 않는다 — 다음에 켤 때 다시 물어본다.
+                return;
             }
 
             var failed = CopyAll(remoteDist, platformDir);
