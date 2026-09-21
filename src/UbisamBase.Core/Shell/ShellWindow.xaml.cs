@@ -38,6 +38,10 @@ public partial class ShellWindow : Window
         DataContext = viewModel;
 
         viewModel.UiSettings.PropertyChanged += OnUiSettingsChanged;
+
+        // FullBleed는 첨부 속성이라 바인딩이 스스로 변화를 못 본다 — 바뀌면 여백을 다시 계산한다.
+        PlatformChrome.FullBleedChanged += OnFullBleedChanged;
+        Closed += (_, _) => PlatformChrome.FullBleedChanged -= OnFullBleedChanged;
         ApplyNavPosition(viewModel.UiSettings.NavPosition);
         ApplyToastPosition(viewModel.UiSettings.ToastPosition);
 
@@ -312,6 +316,9 @@ public partial class ShellWindow : Window
             viewModel.SelectedMainTab = tab;
         }
     }
+
+    private void OnFullBleedChanged(object? sender, EventArgs e)
+        => BindingOperations.GetMultiBindingExpression(ContentBorder, Border.PaddingProperty)?.UpdateTarget();
 
     private void OnUiSettingsChanged(object? sender, PropertyChangedEventArgs e)
     {

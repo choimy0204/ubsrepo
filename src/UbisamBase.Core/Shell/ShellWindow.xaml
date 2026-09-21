@@ -161,8 +161,14 @@
 
                 <!-- 모듈이 마운트되기 전에는 사선 해치가 빈 슬롯을 표시, 마운트되면 단색 배경.
                      여백은 발표자 모드에서 0이 된다 — 껍데기를 걷었는데 액자처럼 테두리가 남으면 안 된다. -->
-                <Border Grid.Row="0"
-                        Padding="{Binding Path=(shell:PlatformChrome.IsVisible), Converter={StaticResource BoolToContentPadding}}">
+                <Border x:Name="ContentBorder" Grid.Row="0">
+                    <Border.Padding>
+                        <!-- 발표자 모드이거나, 올라온 모듈 화면이 FullBleed면 여백 0. -->
+                        <MultiBinding Converter="{StaticResource ContentPadding}">
+                            <Binding Path="(shell:PlatformChrome.IsVisible)"/>
+                            <Binding Path="SelectedMainTab.CurrentContent"/>
+                        </MultiBinding>
+                    </Border.Padding>
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Background" Value="{DynamicResource Ubisam.Brush.ContentBackground}"/>

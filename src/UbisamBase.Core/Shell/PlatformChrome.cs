@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Windows;
 
 namespace UbisamBase.Core.Shell;
 
@@ -37,6 +38,35 @@ public static class PlatformChrome
 
     /// <summary>보임/숨김을 뒤집는다 — 발표 중 단축키나 버튼에 걸어 쓰기 좋다.</summary>
     public static void Toggle() => IsVisible = !IsVisible;
+
+    /// <summary>
+    /// 모듈 화면에 붙이는 첨부 속성. True면 셸이 그 화면 둘레의 여백(26,22)을 주지 않는다.
+    ///
+    /// 편집기·지도·카메라처럼 화면을 꽉 쓰는 모듈은 자기 안에서 이미 칸을 나누고 각 칸이 자기 여백을
+    /// 갖는다. 거기에 바깥 여백이 한 겹 더 붙으면 화면만 좁아지고 테두리처럼 보인다. 반대로 설정
+    /// 화면이나 폼은 여백이 있어야 읽기 좋으므로, 기본은 여백 있음이고 필요한 모듈만 끈다.
+    ///
+    /// <code>&lt;UserControl ... shell:PlatformChrome.FullBleed="True"&gt;</code>
+    /// </summary>
+    public static readonly DependencyProperty FullBleedProperty =
+        DependencyProperty.RegisterAttached(
+            "FullBleed",
+            typeof(bool),
+            typeof(PlatformChrome),
+            new PropertyMetadata(false, OnFullBleedChanged));
+
+    public static void SetFullBleed(DependencyObject element, bool value)
+        => element.SetValue(FullBleedProperty, value);
+
+    public static bool GetFullBleed(DependencyObject element)
+        => element != null && (bool)element.GetValue(FullBleedProperty);
+
+    /// <summary>화면이 떠 있는 동안 값을 바꿔도 셸이 여백을 다시 계산하도록 알린다
+    /// (첨부 속성은 셸의 바인딩에서 직접 감시할 수 없다).</summary>
+    public static event EventHandler? FullBleedChanged;
+
+    private static void OnFullBleedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => FullBleedChanged?.Invoke(d, EventArgs.Empty);
 
     /// <summary>보임/숨김이 바뀔 때마다 새 값(true=보임)과 함께 알린다. 모듈이 자기가 바꾸지 않은
     /// 변화(설정의 "상단 바 접기", 다른 모듈, 단축키)에도 반응할 수 있게 하는 통로다 —

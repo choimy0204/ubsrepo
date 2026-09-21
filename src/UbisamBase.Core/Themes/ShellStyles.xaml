@@ -13,6 +13,8 @@
     <conv:AllBoolToVisibilityConverter x:Key="AllBoolToVis"/>
     <!-- 발표자 모드(PlatformChrome.IsVisible=false)에서는 컨텐츠 여백을 없애 화면을 꽉 채운다. -->
     <conv:BoolToThicknessConverter x:Key="BoolToContentPadding" True="26,22" False="0"/>
+    <!-- 컨텐츠 여백 — 발표자 모드이거나 그 화면이 FullBleed면 0. -->
+    <conv:ContentPaddingConverter x:Key="ContentPadding" Default="26,22"/>
     <conv:InverseBooleanConverter x:Key="InverseBool"/>
     <conv:FirstCharacterConverter x:Key="FirstCharConverter"/>
     <conv:ToastTypeToBrushConverter x:Key="ToastTypeToBrush"/>

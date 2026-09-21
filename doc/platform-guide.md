@@ -485,6 +485,26 @@ public partial class DeckViewModel : ObservableObject, ICloseGuard
   이 확인을 건너뛴다 — 모듈에서는 쓰지 말 것.
 - UI 설정의 "상단 바 접기"는 사용자가 저장해 두는 별개 취향이다. 둘 중 하나라도 숨기라고 하면 상단 바는 숨는다.
 
+## 8-4. 화면을 꽉 쓰는 모듈 — `PlatformChrome.FullBleed`
+
+셸은 모듈 화면 둘레에 여백(26,22)을 준다. 설정 화면이나 폼처럼 글을 읽는 화면에는 그 여백이
+있어야 보기 좋지만, 편집기·지도·카메라처럼 **자기 안에서 이미 칸을 나누는 모듈**은 여백이 한 겹 더
+붙으면 화면만 좁아지고 테두리처럼 보인다. 그런 모듈은 View에 첨부 속성 하나만 붙이면 된다.
+
+```xml
+<UserControl x:Class="MyModule.Views.EditorView"
+             xmlns:shell="clr-namespace:UbisamBase.Core.Shell;assembly=UbisamBase.Core"
+             shell:PlatformChrome.FullBleed="True">
+```
+
+- 기본은 여백 있음(False). 이 화면이 떠 있는 동안만 여백이 사라지고, 다른 탭으로 옮기면 그 탭의
+  설정을 따른다.
+- 발표자 모드(`PlatformChrome.IsVisible = false`)에서는 이 값과 무관하게 여백이 0이다.
+- 코드에서 바꿔도 된다 — `PlatformChrome.SetFullBleed(view, true)`. 떠 있는 동안 바꿔도 셸이 다시
+  계산한다(`FullBleedChanged`).
+- **비주얼 트리를 거슬러 올라가 Border의 Padding을 직접 0으로 만들지 말 것.** 플랫폼 레이아웃이
+  바뀌면 그대로 깨진다 — 이 속성이 그 자리를 대신한다.
+
 ## 9. 테마 · UI 컨벤션
 
 - `Ubisam.Brush.*`, `Ubisam.Style.*`로 시작하는 리소스가 다크/라이트 테마 전체를 정의
