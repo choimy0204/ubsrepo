@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Microsoft.Win32;
 
 namespace UbisamBase.Launcher;
 
@@ -21,7 +20,7 @@ public partial class ProgressWindow : Window
     public ProgressWindow()
     {
         InitializeComponent();
-        ApplyTheme(IsSystemLightTheme());
+        ApplyTheme(LauncherTheme.IsLight());
         SizeChanged += (_, _) => UpdateFillWidth(animate: false);
     }
 
@@ -92,21 +91,6 @@ public partial class ProgressWindow : Window
 
     private static SolidColorBrush Brush(string hex)
         => new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-
-    private static bool IsSystemLightTheme()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(
-                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-
-            return key?.GetValue("AppsUseLightTheme") is not int value || value != 0;
-        }
-        catch
-        {
-            return true;
-        }
-    }
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
 }

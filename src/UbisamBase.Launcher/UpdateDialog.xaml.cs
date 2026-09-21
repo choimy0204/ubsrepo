@@ -2,7 +2,6 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Win32;
 
 namespace UbisamBase.Launcher;
 
@@ -22,7 +21,7 @@ public partial class UpdateDialog : Window
         CurrentValue.Text = string.IsNullOrEmpty(currentVersion) ? "(알 수 없음)" : currentVersion;
         NewValue.Text = newVersion;
 
-        ApplyTheme(IsSystemLightTheme());
+        ApplyTheme(LauncherTheme.IsLight());
     }
 
     /// <summary>보조 버튼에 마우스를 올렸을 때 깔리는 색. 템플릿에서 바인딩해 쓴다.</summary>
@@ -72,22 +71,6 @@ public partial class UpdateDialog : Window
 
     private static SolidColorBrush Brush(string hex)
         => new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-
-    /// <summary>윈도우가 밝은 테마인지. Core의 UiSettingsService.IsSystemLightTheme과 같은 판정이다.</summary>
-    private static bool IsSystemLightTheme()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(
-                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-
-            return key?.GetValue("AppsUseLightTheme") is not int value || value != 0;
-        }
-        catch
-        {
-            return true;
-        }
-    }
 
     /// <summary>제목줄이 없으므로 창 아무 데나 끌어서 옮길 수 있게 한다.</summary>
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
