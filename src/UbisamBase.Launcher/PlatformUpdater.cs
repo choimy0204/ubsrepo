@@ -4,7 +4,9 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace UbisamBase.Launcher;
 
@@ -13,9 +15,14 @@ namespace UbisamBase.Launcher;
 /// 새 버전이면 받아서 덮어쓴다. 순서는 이렇다.
 ///
 /// <code>
-/// 설정에서 켜져 있나? → 인터넷 연결됐나? → 저장소에 새 커밋이 있나? → 그 안의 업데이트 파일이
-/// 지금 것보다 새 버전인가? → 자동 업데이트면 바로 받기 / 아니면 물어보고 "예"일 때만 받기
+/// 설정에서 켜져 있나? → 인터넷 연결됐나? → (진행 창 표시) 저장소에 새 커밋이 있나?
+/// → 업데이트 파일 받기(진행률 표시) → 지금 것보다 새 버전인가?
+/// → 자동 업데이트면 바로 설치 / 아니면 물어보고 "예"일 때만 설치
 /// </code>
+///
+/// 받는 동안 <see cref="ProgressWindow"/>를 띄운다 — 예전에는 아무것도 안 보여서 몇 초 동안
+/// 프로그램이 안 켜지는 것처럼 보였다. 설치 여부는 <b>다 받은 뒤에</b> 묻는다(그래야 "예"를 누른
+/// 다음에 또 기다리지 않는다).
 ///
 /// 어느 단계에서 막히든(설정 꺼짐 · 네트워크 없음 · git 없음 · 저장소 접근 실패) 조용히 넘어가고
 /// 기존 파일로 그대로 실행한다 — 업데이트 때문에 프로그램이 안 켜지는 일은 없어야 한다.
@@ -96,80 +103,57 @@ internal static class PlatformUpdater
             return; // git이 깔려 있지 않은 PC — 업데이트 기능만 조용히 쉰다.
         }
 
-        // 2) 업데이트 할 게 있는가 — 원격 브랜치의 최신 커밋이 마지막에 설치한 커밋과 같으면 끝.
-        var branch = string.IsNullOrWhiteSpace(settings.Branch) ? "main" : settings.Branch.Trim();
-        if (!TryRunGit($"ls-remote \"{settings.RepositoryUrl}\" \"refs/heads/{branch}\"", null, LsRemoteTimeoutMs, out var lsRemote))
+        // 여기서부터 몇 초가 걸릴 수 있다 — 무엇을 하고 있는지 창으로 보여준다.
+        var progress = new ProgressWindow();
+        progress.Show();
+
+        Download? download = null;
+
+        // 받기는 배경 스레드에서 하고, 이 스레드는 DispatcherFrame으로 화면을 계속 그린다.
+        // (Application.Run을 쓸 수 없다 — Shell이 나중에 자기 Application을 만든다. Dispatcher를
+        //  종료시키는 방식도 안 된다 — 같은 스레드에서 Shell이 계속 돌아야 하기 때문이다.)
+        var frame = new DispatcherFrame();
+        var worker = new Thread(() =>
         {
-            Note("원격 확인 실패(주소·권한·네트워크) — 건너뜀");
-            return; // 주소가 틀렸거나 접근 권한이 없다 — 실행을 막지 않는다.
+            try
+            {
+                download = Prepare(platformDir, settings, progress);
+            }
+            catch (Exception ex)
+            {
+                Note("받는 중 예외 : " + ex.Message);
+            }
+            finally
+            {
+                progress.Dispatcher.BeginInvoke(new Action(() => frame.Continue = false));
+            }
+        })
+        {
+            IsBackground = true
+        };
+
+        worker.Start();
+        Dispatcher.PushFrame(frame);
+        progress.Close();
+
+        if (download == null)
+        {
+            return; // 할 일이 없거나 중간에 막혔다 — 이유는 로그에 남아 있다.
         }
 
-        var remoteCommit = FirstToken(lsRemote);
-        Note($"원격 커밋:{Short(remoteCommit)} / 설치된 커밋:{Short(settings.InstalledCommit)}");
-
-        if (string.IsNullOrEmpty(remoteCommit) || remoteCommit == settings.InstalledCommit)
-        {
-            Note("새 커밋 없음 — 끝");
-            return;
-        }
-
-        var tempDir = Path.Combine(Path.GetTempPath(), "UbisamPlatformUpdate_" + Guid.NewGuid().ToString("N"));
         try
         {
-            var distName = string.IsNullOrWhiteSpace(settings.DistPath) ? "dist" : settings.DistPath.Trim().Replace('\\', '/');
-
-            // 업데이트 파일만 얕게 받는다 — 소스 전체 이력을 받지 않는다.
-            if (!TryRunGit(
-                    $"clone --depth 1 --branch \"{branch}\" --filter=blob:none --sparse \"{settings.RepositoryUrl}\" \"{tempDir}\"",
-                    null, CloneTimeoutMs, out _))
-            {
-                Note("업데이트 파일을 내려받지 못함(clone 실패) — 건너뜀");
-                return;
-            }
-
-            if (!TryRunGit($"sparse-checkout set \"{distName}\"", tempDir, CloneTimeoutMs, out _))
-            {
-                Note("업데이트 폴더를 꺼내지 못함(sparse-checkout 실패) — 건너뜀");
-                return;
-            }
-
-            var remoteDist = Path.Combine(tempDir, distName.Replace('/', '\\'));
-            if (!Directory.Exists(remoteDist))
-            {
-                Note($"저장소에 {distName} 폴더가 없음 — 커밋만 기록");
-                // 저장소에 아직 업데이트 파일이 없다 — 이 커밋은 확인했다고 기록만 하고 넘어간다.
-                settings.InstalledCommit = remoteCommit;
-                settings.Save(SettingsPath);
-                return;
-            }
-
-            var remoteVersion = ReadVersion(Path.Combine(remoteDist, VersionFileName));
-            var localVersion = ReadVersion(Path.Combine(platformDir, VersionFileName));
-
-            // 버전은 배포 시각("yyyy-MM-dd HH:mm:ss")이라 문자열 비교로 앞뒤가 가려진다.
-            // 원격이 더 새것일 때만 업데이트한다 — 소스만 바뀐 커밋이면 확인 기록만 남긴다.
-            Note($"원격 버전:{remoteVersion} / 지금 버전:{localVersion}");
-
-            if (string.IsNullOrEmpty(remoteVersion) || string.CompareOrdinal(remoteVersion, localVersion) <= 0)
-            {
-                Note("더 새 버전이 아님 — 커밋만 기록");
-                settings.InstalledCommit = remoteCommit;
-                settings.Save(SettingsPath);
-                return;
-            }
-
-            // 3) 자동 업데이트가 아니면 물어본다.
-            if (!settings.AutoUpdate && !UpdateDialog.Ask(localVersion, remoteVersion))
+            if (!settings.AutoUpdate && !UpdateDialog.Ask(download.LocalVersion, download.RemoteVersion))
             {
                 Note("사용자가 \"나중에\"를 선택 — 다음 실행 때 다시 물어본다");
-                // 기록을 남기지 않는다 — 다음에 켤 때 다시 물어본다.
-                return;
+                return; // 기록을 남기지 않는다 — 다음에 켤 때 다시 물어본다.
             }
 
-            var failed = CopyAll(remoteDist, platformDir);
+            var failed = CopyAll(download.DistDir, platformDir);
             Note($"업데이트 완료 — 바꾸지 못한 파일:{failed}개");
-            settings.InstalledCommit = remoteCommit;
-            settings.InstalledVersion = remoteVersion;
+
+            settings.InstalledCommit = download.Commit;
+            settings.InstalledVersion = download.RemoteVersion;
             settings.Save(SettingsPath);
 
             if (failed > 0)
@@ -182,8 +166,128 @@ internal static class PlatformUpdater
         }
         finally
         {
-            TryDeleteDirectory(tempDir);
+            TryDeleteDirectory(download.TempDir);
         }
+    }
+
+    /// <summary>원격을 확인하고, 새 버전이면 업데이트 파일을 임시 폴더에 받아 온다.
+    /// 받을 것이 없으면 null. 화면 표시는 <paramref name="progress"/>로 알린다.</summary>
+    private static Download? Prepare(string platformDir, Settings settings, ProgressWindow progress)
+    {
+        progress.SetStage("업데이트 확인 중", "저장소에서 최신 버전을 확인하고 있습니다.");
+        progress.SetPercent(6);
+
+        var branch = string.IsNullOrWhiteSpace(settings.Branch) ? "main" : settings.Branch.Trim();
+        if (!TryRunGit($"ls-remote \"{settings.RepositoryUrl}\" \"refs/heads/{branch}\"", null, LsRemoteTimeoutMs, out var lsRemote))
+        {
+            Note("원격 확인 실패(주소·권한·네트워크) — 건너뜀");
+            return null;
+        }
+
+        var remoteCommit = FirstToken(lsRemote);
+        Note($"원격 커밋:{Short(remoteCommit)} / 설치된 커밋:{Short(settings.InstalledCommit)}");
+
+        if (string.IsNullOrEmpty(remoteCommit) || remoteCommit == settings.InstalledCommit)
+        {
+            Note("새 커밋 없음 — 끝");
+            progress.SetStage("최신 상태입니다", "받을 새 버전이 없습니다.");
+            progress.SetPercent(100);
+            Thread.Sleep(400); // 창이 깜빡이고 사라지지 않도록 잠깐 보여준다.
+            return null;
+        }
+
+        progress.SetStage("새 버전을 찾았습니다", "업데이트 파일을 불러오고 있습니다.");
+        progress.SetPercent(12);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "UbisamPlatformUpdate_" + Guid.NewGuid().ToString("N"));
+        var distName = string.IsNullOrWhiteSpace(settings.DistPath) ? "dist" : settings.DistPath.Trim().Replace('\\', '/');
+        var keepTemp = false;
+
+        try
+        {
+            // 업데이트 파일만 얕게 받는다 — 소스 전체 이력을 받지 않는다.
+            // --progress를 줘야 진행률이 나온다(출력이 리디렉트되면 git은 기본적으로 조용하다).
+            if (!TryRunGit(
+                    $"clone --progress --depth 1 --branch \"{branch}\" --filter=blob:none --sparse \"{settings.RepositoryUrl}\" \"{tempDir}\"",
+                    null, CloneTimeoutMs, out _, p => progress.SetPercent(12 + (p * 0.58))))
+            {
+                Note("업데이트 파일을 내려받지 못함(clone 실패) — 건너뜀");
+                return null;
+            }
+
+            progress.SetPercent(70);
+
+            if (!TryRunGit($"sparse-checkout set \"{distName}\"", tempDir, CloneTimeoutMs, out _, p => progress.SetPercent(70 + (p * 0.22))))
+            {
+                Note("업데이트 폴더를 꺼내지 못함(sparse-checkout 실패) — 건너뜀");
+                return null;
+            }
+
+            progress.SetPercent(94);
+
+            var remoteDist = Path.Combine(tempDir, distName.Replace('/', '\\'));
+            if (!Directory.Exists(remoteDist))
+            {
+                Note($"저장소에 {distName} 폴더가 없음 — 커밋만 기록");
+                settings.InstalledCommit = remoteCommit;
+                settings.Save(SettingsPath);
+                return null;
+            }
+
+            var remoteVersion = ReadVersion(Path.Combine(remoteDist, VersionFileName));
+            var localVersion = ReadVersion(Path.Combine(platformDir, VersionFileName));
+            Note($"원격 버전:{remoteVersion} / 지금 버전:{localVersion}");
+
+            // 버전은 배포 시각("yyyy-MM-dd HH:mm:ss")이라 문자열 비교로 앞뒤가 가려진다.
+            // 원격이 더 새것일 때만 설치한다 — 소스만 바뀐 커밋이면 확인 기록만 남긴다.
+            if (string.IsNullOrEmpty(remoteVersion) || string.CompareOrdinal(remoteVersion, localVersion) <= 0)
+            {
+                Note("더 새 버전이 아님 — 커밋만 기록");
+                settings.InstalledCommit = remoteCommit;
+                settings.Save(SettingsPath);
+                progress.SetStage("최신 상태입니다", "받을 새 버전이 없습니다.");
+                progress.SetPercent(100);
+                Thread.Sleep(400);
+                return null;
+            }
+
+            progress.SetStage("받기 완료", "설치할지 확인합니다.");
+            progress.SetPercent(100);
+            Thread.Sleep(350); // 100%가 눈에 보이도록 잠깐 둔다.
+
+            keepTemp = true; // 설치까지 쓰므로 여기서 지우지 않는다.
+            return new Download(tempDir, remoteDist, remoteCommit, remoteVersion, localVersion);
+        }
+        finally
+        {
+            if (!keepTemp)
+            {
+                TryDeleteDirectory(tempDir);
+            }
+        }
+    }
+
+    /// <summary>받아둔 업데이트 파일 한 벌.</summary>
+    private sealed class Download
+    {
+        public Download(string tempDir, string distDir, string commit, string remoteVersion, string localVersion)
+        {
+            TempDir = tempDir;
+            DistDir = distDir;
+            Commit = commit;
+            RemoteVersion = remoteVersion;
+            LocalVersion = localVersion;
+        }
+
+        public string TempDir { get; }
+
+        public string DistDir { get; }
+
+        public string Commit { get; }
+
+        public string RemoteVersion { get; }
+
+        public string LocalVersion { get; }
     }
 
     private static string Short(string commit)
@@ -248,7 +352,12 @@ internal static class PlatformUpdater
         return failed;
     }
 
-    private static bool TryRunGit(string arguments, string? workingDirectory, int timeoutMs, out string output)
+    /// <summary>
+    /// git을 한 번 실행한다. <paramref name="onPercent"/>를 주면 진행률(0~100)을 알려준다 —
+    /// git은 진행률을 stderr에 줄바꿈 없이(\r) 흘리므로 줄 단위가 아니라 글자 단위로 읽는다.
+    /// stdout과 stderr를 각각 다른 스레드에서 읽는 이유는, 한쪽 버퍼가 차서 서로 기다리는 것을 막기 위함이다.
+    /// </summary>
+    private static bool TryRunGit(string arguments, string? workingDirectory, int timeoutMs, out string output, Action<double>? onPercent = null)
     {
         output = string.Empty;
 
@@ -276,8 +385,11 @@ internal static class PlatformUpdater
                 return false;
             }
 
-            var stdout = process.StandardOutput.ReadToEnd();
-            process.StandardError.ReadToEnd();
+            var stdout = string.Empty;
+            var outReader = new Thread(() => stdout = process.StandardOutput.ReadToEnd()) { IsBackground = true };
+            var errReader = new Thread(() => ReadProgress(process.StandardError, onPercent)) { IsBackground = true };
+            outReader.Start();
+            errReader.Start();
 
             if (!process.WaitForExit(timeoutMs))
             {
@@ -293,12 +405,58 @@ internal static class PlatformUpdater
                 return false;
             }
 
+            outReader.Join(2000);
+            errReader.Join(2000);
+
             output = stdout;
             return process.ExitCode == 0;
         }
         catch
         {
             return false; // git이 없거나 실행이 막힌 환경
+        }
+    }
+
+    /// <summary>stderr를 글자 단위로 읽어 "…: 37%" 같은 진행률만 뽑아낸다.</summary>
+    private static void ReadProgress(StreamReader reader, Action<double>? onPercent)
+    {
+        try
+        {
+            var line = new StringBuilder();
+
+            while (true)
+            {
+                var read = reader.Read();
+                if (read < 0)
+                {
+                    break;
+                }
+
+                var ch = (char)read;
+                if (ch == '\r' || ch == '\n')
+                {
+                    if (onPercent != null && line.Length > 0)
+                    {
+                        var match = Regex.Match(line.ToString(), @"(\d{1,3})%");
+                        if (match.Success && double.TryParse(match.Groups[1].Value, out var value))
+                        {
+                            onPercent(value);
+                        }
+                    }
+
+                    line.Clear();
+                    continue;
+                }
+
+                if (line.Length < 200)
+                {
+                    line.Append(ch);
+                }
+            }
+        }
+        catch
+        {
+            // 읽기가 끊겨도 실행에는 지장이 없다.
         }
     }
 
