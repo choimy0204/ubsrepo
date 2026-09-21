@@ -43,7 +43,8 @@ internal static class PlatformUpdater
     {
         try
         {
-            File.WriteAllText(LogPath, LogBuffer.ToString());
+            // 메모장·PowerShell에서 한글이 깨지지 않도록 BOM을 붙여 쓴다.
+            File.WriteAllText(LogPath, LogBuffer.ToString(), new UTF8Encoding(true));
         }
         catch
         {
