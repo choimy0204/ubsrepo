@@ -26,9 +26,30 @@ namespace UbisamBase.Launcher;
 internal static class PlatformUpdater
 {
     private const string SettingsPath = @"D:\UbisamPlatform\update-settings.json";
+    // 업데이트 확인은 조용히 지나가는 것이 기본이라, 왜 안 떴는지 볼 방법이 하나는 있어야 한다.
+    // 실행할 때마다 덮어쓰므로 파일이 쌓이지 않는다.
+    private const string LogPath = @"D:\UbisamPlatform\update-log.txt";
     private const string VersionFileName = "platform-version.json";
     private const int LsRemoteTimeoutMs = 10000;
     private const int CloneTimeoutMs = 180000;
+
+    private static readonly StringBuilder LogBuffer = new StringBuilder();
+
+    /// <summary>확인 과정을 한 줄씩 남긴다(D:\UbisamPlatform\update-log.txt). 토큰이나 응답 내용은 남기지 않는다.</summary>
+    private static void Note(string message)
+        => LogBuffer.AppendLine(DateTime.Now.ToString("HH:mm:ss") + "  " + message);
+
+    private static void FlushLog()
+    {
+        try
+        {
+            File.WriteAllText(LogPath, LogBuffer.ToString());
+        }
+        catch
+        {
+            // 로그를 못 써도 실행에는 지장이 없다.
+        }
+    }
 
     /// <summary>플랫폼 배포 폴더를 최신으로 만든다. 실패해도 예외를 밖으로 내보내지 않는다.</summary>
     public static void TryUpdate(string platformDir)
@@ -39,28 +60,38 @@ internal static class PlatformUpdater
         }
         catch (Exception ex)
         {
+            Note("예외 : " + ex.Message);
             MessageBox.Show(
                 "플랫폼 업데이트를 확인하는 중 문제가 발생했습니다:\n" + ex.Message + "\n\n기존 버전으로 계속 실행합니다.",
                 "UbisamBase 업데이트", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            FlushLog();
         }
     }
 
     private static void Run(string platformDir)
     {
         var settings = Settings.Load(SettingsPath);
+        Note($"시작 — 사용:{settings.Enabled} 자동:{settings.AutoUpdate} 주소:{(string.IsNullOrWhiteSpace(settings.RepositoryUrl) ? "(없음)" : settings.RepositoryUrl)}");
+
         if (!settings.Enabled || string.IsNullOrWhiteSpace(settings.RepositoryUrl))
         {
+            Note("설정이 꺼져 있거나 주소가 비어 있어 건너뜀");
             return;
         }
 
         // 1) 인터넷 연결 확인 — 연결이 없으면 깃을 부르지도 않는다(오프라인 현장 PC).
         if (!NetworkInterface.GetIsNetworkAvailable())
         {
+            Note("인터넷 연결 없음 — 건너뜀");
             return;
         }
 
         if (!TryRunGit("--version", null, LsRemoteTimeoutMs, out _))
         {
+            Note("git을 찾지 못함 — 건너뜀");
             return; // git이 깔려 있지 않은 PC — 업데이트 기능만 조용히 쉰다.
         }
 
@@ -68,12 +99,16 @@ internal static class PlatformUpdater
         var branch = string.IsNullOrWhiteSpace(settings.Branch) ? "main" : settings.Branch.Trim();
         if (!TryRunGit($"ls-remote \"{settings.RepositoryUrl}\" \"refs/heads/{branch}\"", null, LsRemoteTimeoutMs, out var lsRemote))
         {
+            Note("원격 확인 실패(주소·권한·네트워크) — 건너뜀");
             return; // 주소가 틀렸거나 접근 권한이 없다 — 실행을 막지 않는다.
         }
 
         var remoteCommit = FirstToken(lsRemote);
+        Note($"원격 커밋:{Short(remoteCommit)} / 설치된 커밋:{Short(settings.InstalledCommit)}");
+
         if (string.IsNullOrEmpty(remoteCommit) || remoteCommit == settings.InstalledCommit)
         {
+            Note("새 커밋 없음 — 끝");
             return;
         }
 
@@ -87,17 +122,20 @@ internal static class PlatformUpdater
                     $"clone --depth 1 --branch \"{branch}\" --filter=blob:none --sparse \"{settings.RepositoryUrl}\" \"{tempDir}\"",
                     null, CloneTimeoutMs, out _))
             {
+                Note("업데이트 파일을 내려받지 못함(clone 실패) — 건너뜀");
                 return;
             }
 
             if (!TryRunGit($"sparse-checkout set \"{distName}\"", tempDir, CloneTimeoutMs, out _))
             {
+                Note("업데이트 폴더를 꺼내지 못함(sparse-checkout 실패) — 건너뜀");
                 return;
             }
 
             var remoteDist = Path.Combine(tempDir, distName.Replace('/', '\\'));
             if (!Directory.Exists(remoteDist))
             {
+                Note($"저장소에 {distName} 폴더가 없음 — 커밋만 기록");
                 // 저장소에 아직 업데이트 파일이 없다 — 이 커밋은 확인했다고 기록만 하고 넘어간다.
                 settings.InstalledCommit = remoteCommit;
                 settings.Save(SettingsPath);
@@ -109,8 +147,11 @@ internal static class PlatformUpdater
 
             // 버전은 배포 시각("yyyy-MM-dd HH:mm:ss")이라 문자열 비교로 앞뒤가 가려진다.
             // 원격이 더 새것일 때만 업데이트한다 — 소스만 바뀐 커밋이면 확인 기록만 남긴다.
+            Note($"원격 버전:{remoteVersion} / 지금 버전:{localVersion}");
+
             if (string.IsNullOrEmpty(remoteVersion) || string.CompareOrdinal(remoteVersion, localVersion) <= 0)
             {
+                Note("더 새 버전이 아님 — 커밋만 기록");
                 settings.InstalledCommit = remoteCommit;
                 settings.Save(SettingsPath);
                 return;
@@ -119,11 +160,13 @@ internal static class PlatformUpdater
             // 3) 자동 업데이트가 아니면 물어본다.
             if (!settings.AutoUpdate && !UpdateDialog.Ask(localVersion, remoteVersion))
             {
+                Note("사용자가 \"나중에\"를 선택 — 다음 실행 때 다시 물어본다");
                 // 기록을 남기지 않는다 — 다음에 켤 때 다시 물어본다.
                 return;
             }
 
             var failed = CopyAll(remoteDist, platformDir);
+            Note($"업데이트 완료 — 바꾸지 못한 파일:{failed}개");
             settings.InstalledCommit = remoteCommit;
             settings.InstalledVersion = remoteVersion;
             settings.Save(SettingsPath);
@@ -141,6 +184,9 @@ internal static class PlatformUpdater
             TryDeleteDirectory(tempDir);
         }
     }
+
+    private static string Short(string commit)
+        => string.IsNullOrEmpty(commit) ? "(없음)" : commit.Substring(0, Math.Min(7, commit.Length));
 
     private static string FirstToken(string text)
     {
