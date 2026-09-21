@@ -60,4 +60,12 @@
     <SolidColorBrush x:Key="Ubisam.Brush.Toast.Border" Color="#FFD6D6D9"/>
     <DropShadowEffect x:Key="Ubisam.Effect.Toast" BlurRadius="12" ShadowDepth="3" Direction="270" Opacity="0.22" Color="#000000"/>
 
+    <!-- 차트 시리즈 색 — 다크와 같은 순서·같은 계열이되, 밝은 바탕에서 읽히도록 한 단계 진하다. -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series1" Color="#FF1D82E8"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series2" Color="#FF16A79C"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series3" Color="#FFB8791A"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series4" Color="#FF7B5BC7"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series5" Color="#FF2E8B4F"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series6" Color="#FFC93B3B"/>
+
 </ResourceDictionary>

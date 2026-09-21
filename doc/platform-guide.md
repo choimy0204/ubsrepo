@@ -299,7 +299,32 @@ private void Rebuild()
 ```
 
 - **`Background="Transparent"`를 꼭 지정** — 기본값은 흰 배경이라 다크 테마에서 튐.
-- `ChartTheme.Column(values, name)`, `ChartTheme.Gauge(percent)`(도넛 게이지, `ISeries[]` 반환)도 있음.
+- **툴팁·범례는 따로 입혀야 한다** — 지정하지 않으면 LiveCharts 기본(밝은 바탕 + 검은 글자)이 나와
+  다크 테마에서 튄다. 차트를 만든 뒤와 테마가 바뀐 뒤에 `ChartTheme.Apply(chart)`를 한 번 부른다
+  (`CartesianChart` / `PieChart` 둘 다 있음).
+
+### 4-1. 차트 종류별 — 무엇을 언제 쓰나
+
+| 만들기 | 생김새 | 쓰는 자리 |
+| --- | --- | --- |
+| `Line(values, name)` | accent 선 2px, 보간 없음, 면적 12% | 단일 측정값 추이(기본) |
+| `Line(values, name, i)` | 팔레트 i번 선, 면적 없음 | 여러 계열을 한 그래프에 겹칠 때 |
+| `ReferenceLine(values, name)` | 회색 파선, hover 없음 | 기준·목표·규격 상하한. **측정선보다 먼저** 넣어야 아래에 깔린다 |
+| `SmoothLine(values, name, i)` | 곡선 보간(0.65) | 추세만 보여줄 때. **공정 측정값에는 쓰지 말 것** — 없던 중간값을 지어낸다 |
+| `Area(values, name, i)` | 선 + 채움 24% | 누적량·점유량처럼 "쌓인 양" |
+| `StepLine(values, name, i)` | 계단선 | ON/OFF·단계값처럼 다음 값까지 유지되는 신호 |
+| `Column(values, name[, i])` | 각진 세로 막대, 채움 85% | 항목별 비교(수량·횟수) |
+| `StackedColumn(values, name, i)` | 누적 세로 막대 | 전체 대비 구성비를 시간축으로 |
+| `Bar(values, name[, i])` | 가로 막대 | 항목 이름이 길어 세로 막대 라벨이 겹칠 때(설비명·불량 유형) |
+| `Pie(values[, names])` | 원형, 조각 사이 판 색 경계 | 구성비. 조각 6개 이하일 때만 |
+| `Donut(values[, names])` | 가운데 빈 원형 | 구성비 + 가운데에 총계 표시 |
+| `Gauge(percent)` | 0~100 도넛 게이지 | 가동률·달성률 한 값 |
+| `Scatter(points, name, i)` | 점 9px, 판 색 테두리 | 두 값의 상관 |
+
+- **색은 직접 고르지 않는다.** 단일 계열은 accent 하나, 여러 계열은 `seriesIndex`를 0,1,2…로 넘기면
+  `Ubisam.Brush.Chart.Series1~6` 팔레트를 순서대로 쓴다(라이트/다크 각각 따로 정의돼 있다).
+  7개째부터는 색이 처음으로 돌아가므로, 계열이 그보다 많으면 차트를 나누는 편이 낫다.
+- 팔레트 색이 필요하면 `ChartTheme.SeriesColor(i)`로 꺼내 쓴다(범례 표식 등).
 - 소비 프로젝트에서 차트를 직접 쓰려면 `LiveChartsCore`, `LiveChartsCore.SkiaSharpView`,
   `LiveChartsCore.SkiaSharpView.WPF`, `SkiaSharp` — 4개를 `$(UbisamPlatformDir)`에서
   HintPath로 참조 추가해야 함(TestApp.csproj 예시 참고).

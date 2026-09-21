@@ -65,4 +65,14 @@
     <SolidColorBrush x:Key="Ubisam.Brush.Toast.Border" Color="#FF535B67"/>
     <DropShadowEffect x:Key="Ubisam.Effect.Toast" BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.55" Color="#000000"/>
 
+    <!-- 차트 시리즈 색 — 여러 계열을 한 그래프에 그릴 때 쓰는 순서 고정 팔레트.
+         1번은 회사 하늘색(단일 계열 차트는 이 색 하나만 쓴다), 2~6번은 색상환에서 충분히 떨어뜨려
+         겹쳐 그려도 구분되게 골랐다. 다크에서는 채도를 낮추고 밝기를 올려 어두운 판 위에서 뜨게 한다. -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series1" Color="#FF4DA6F5"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series2" Color="#FF4ECDC4"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series3" Color="#FFE0A63C"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series4" Color="#FFA98BE8"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series5" Color="#FF5FC97E"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Chart.Series6" Color="#FFF07070"/>
+
 </ResourceDictionary>
