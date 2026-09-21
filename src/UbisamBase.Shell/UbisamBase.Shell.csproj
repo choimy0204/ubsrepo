@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>UbisamBase.Shell</RootNamespace>
+    <AssemblyName>UbisamBase.Shell</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UbisamBase.Core\UbisamBase.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 빌드 결과물을 D:\UbisamPlatform\bin에 반영하는 로직은 저장소 루트의 Directory.Build.targets에
+       있다(Core/Shell/Launcher가 같이 쓴다). 빌드할 때마다(Debug/Release 모두) 반영된다. -->
+
+</Project>

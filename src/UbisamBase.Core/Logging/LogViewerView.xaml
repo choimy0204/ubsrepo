@@ -1,0 +1,77 @@
+<UserControl x:Class="UbisamBase.Core.Logging.LogViewerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- 태그/메시지처럼 긴 텍스트 열은 가운데 정렬 기본값 대신 왼쪽 정렬이 읽기 편하다. -->
+        <Style x:Key="LeftAlignedCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <!-- 우클릭 메뉴 — 목록이 아니라 네모난 버튼 하나만 뜨도록 메뉴 크롬을 다 걷어낸다
+             (체크박스/아이콘 여백, 서브메뉴 화살표, 단축키 열, 팝업 그림자 전부 제거). -->
+        <ContextMenu x:Key="LogRowContextMenu">
+            <ContextMenu.Template>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{DynamicResource Ubisam.Brush.Input.Background}"
+                            BorderBrush="{DynamicResource Ubisam.Brush.Input.Border}"
+                            BorderThickness="1"
+                            SnapsToDevicePixels="True">
+                        <ItemsPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </ContextMenu.Template>
+            <MenuItem Header="복사" Click="CopyMenuItem_Click">
+                <MenuItem.Template>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Bd" Background="Transparent" Padding="18,9">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"
+                                              TextElement.FontWeight="Medium"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Ubisam.Brush.Sidebar.HoverBackground}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </MenuItem.Template>
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <TextBlock Text="로그" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="검색" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Width="220" Margin="0,0,16,0"/>
+                <TextBlock Text="레벨" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox ItemsSource="{Binding LevelOptions}"
+                          SelectedItem="{Binding SelectedLevelOption, Mode=TwoWay}"
+                          DisplayMemberPath="Label"
+                          Width="120"/>
+            </StackPanel>
+        </DockPanel>
+
+        <DataGrid ItemsSource="{Binding EntriesView}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  ClipboardCopyMode="ExcludeHeader"
+                  ContextMenu="{StaticResource LogRowContextMenu}"
+                  PreviewMouseRightButtonDown="LogGrid_PreviewMouseRightButtonDown">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="시간" Binding="{Binding Timestamp, StringFormat={}{0:HH:mm:ss.fff}}" Width="110"/>
+                <DataGridTextColumn Header="레벨" Binding="{Binding Level}" Width="80"/>
+                <DataGridTextColumn Header="태그" Binding="{Binding Tag}" Width="140" CellStyle="{StaticResource LeftAlignedCell}"/>
+                <DataGridTextColumn Header="메시지" Binding="{Binding Message}" Width="*" CellStyle="{StaticResource LeftAlignedCell}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

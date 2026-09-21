@@ -1,0 +1,56 @@
+<UserControl x:Class="UbisamBase.Core.Backup.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UbisamBase.Core.SettingItems"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- 파일 경로처럼 긴 텍스트 열은 가운데 정렬 기본값 대신 왼쪽 정렬이 읽기 편하다 -->
+        <Style x:Key="LeftAlignedCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="백업" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+            <local:SettingsToolbar Grid.Column="1"/>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="매일 백업 시각" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding BackupTimeText, UpdateSourceTrigger=PropertyChanged}" Width="80" VerticalAlignment="Center"/>
+            <Button Content="지금 백업" Command="{Binding RunNowCommand}" Margin="16,0,0,0" Padding="14,6"/>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="항목 추가" Command="{Binding AddItemCommand}" Padding="14,6"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Items}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="사용" Binding="{Binding Enabled}" Width="50"/>
+                <DataGridTextColumn Header="이름" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                <DataGridTextColumn Header="원본 경로" Binding="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}" Width="*" CellStyle="{StaticResource LeftAlignedCell}"/>
+                <DataGridTextColumn Header="백업 저장 경로" Binding="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}" Width="*" CellStyle="{StaticResource LeftAlignedCell}"/>
+                <DataGridTextColumn Header="보관 개수" Binding="{Binding KeepCount, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                <DataGridTemplateColumn Header="" Width="70">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="삭제"
+                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Padding="8,2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

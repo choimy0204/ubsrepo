@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 라이트: 기술 도면 톤의 밝은 바탕 + 회사 하늘색 accent -->
+    <SolidColorBrush x:Key="Ubisam.Brush.ContentBackground" Color="#FFF2F2F3"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.ContentForeground" Color="#FF1D1F20"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent" Color="#FF2196F3"/>
+    <!-- 글자를 얹는 채움면용 깊은 단계 + 그 위 글자색 (다크와 키를 공유) -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent.Fill" Color="#FF1D82E8"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent.OnFill" Color="#FFFFFFFF"/>
+
+    <!-- 오류 — 대화상자 아이콘과 실패 태그에만 쓴다. 장식용 색을 늘리지 않는다. -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Danger" Color="#FFC93B3B"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Danger.Fill" Color="#FFB32F2F"/>
+
+    <!-- 상단 브랜딩 바 = 흰 판, 하단 탭 바와 같은 계열 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.Background" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.Foreground" Color="#FF5D5D60"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.HoverBackground" Color="#14000000"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.SelectedBackground" Color="#122196F3"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.SelectedForeground" Color="#FF2196F3"/>
+
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Background" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Border" Color="#FFD6D6D9"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Foreground" Color="#FF5D5D60"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.HoverBackground" Color="#14000000"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.SelectedBackground" Color="#FF2196F3"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.SelectedForeground" Color="#FFFFFFFF"/>
+
+    <!-- 입력 컨트롤 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.Background" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.Border" Color="#FFC9C9CC"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.BorderHover" Color="#FFA8A8AC"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.DisabledBackground" Color="#FFEDEDEF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.DisabledBorder" Color="#FFDEDEE1"/>
+    <Color x:Key="Ubisam.Color.AccentGlow">#FF2196F3</Color>
+
+    <!-- 표 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.HeaderBackground" Color="#FFEDEDEF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.RowBorder" Color="#FFEDEDEF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.GridLine" Color="#FFDEDEE1"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.AltRowBackground" Color="#FFF8F8F9"/>
+
+    <!-- 상태 태그 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.AccentBackground" Color="#FFDCEBFA"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.AccentForeground" Color="#FF0B4C7E"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.NeutralBackground" Color="#FFEDEDEF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.NeutralForeground" Color="#FF3F3F42"/>
+
+    <!-- 빈 뷰 슬롯의 사선 해치 색 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Slot.Hatch" Color="#172196F3"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Muted" Color="#FF98989B"/>
+
+</ResourceDictionary>

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UbisamBase.Core/UbisamBase.Core.csproj" />
+    <Project Path="src/UbisamBase.Shell/UbisamBase.Shell.csproj" />
+    <Project Path="src/UbisamBase.Launcher/UbisamBase.Launcher.csproj" />
+  </Folder>
+</Solution>

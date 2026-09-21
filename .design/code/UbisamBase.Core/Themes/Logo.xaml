@@ -1,0 +1,41 @@
+<!-- 회사 로고 — 원본 마크(둥근 사각 타일 + 동심 아치 2개 + 점)를 벡터로 재구성.
+     ShellWindow.xaml의 로고 자리에서 <Image Source="{StaticResource Ubisam.Logo}"/>로 쓰거나,
+     단색 배경 위에 마크만 얹으려면 Ubisam.Logo.Mark(Geometry)와 Ubisam.Logo.Dot을 직접 그린다. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 아치 2개 (스트로크로 그린다: StrokeThickness 6.2, 64x64 좌표계) -->
+    <Geometry x:Key="Ubisam.Logo.Arcs">M20,32.5 A12.5,12.5 0 0 1 32.5,45 M20,20.5 A24.5,24.5 0 0 1 44.5,45</Geometry>
+    <!-- 점 (채움) -->
+    <Geometry x:Key="Ubisam.Logo.Dot">M15.1,45 A4.9,4.9 0 0 1 24.9,45 A4.9,4.9 0 0 1 15.1,45 Z</Geometry>
+
+    <LinearGradientBrush x:Key="Ubisam.Logo.TileBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF56ADF7"/>
+        <GradientStop Offset="1" Color="#FF1D82E8"/>
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="Ubisam.Logo.MarkBrush" Color="#FFEDF2F4"/>
+
+    <DrawingImage x:Key="Ubisam.Logo">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <!-- 둥근 사각 타일 -->
+                <GeometryDrawing Brush="{StaticResource Ubisam.Logo.TileBrush}">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,64,64" RadiusX="15" RadiusY="15"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 아치 -->
+                <GeometryDrawing Geometry="{StaticResource Ubisam.Logo.Arcs}">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{StaticResource Ubisam.Logo.MarkBrush}" Thickness="6.2" StartLineCap="Flat" EndLineCap="Flat"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <!-- 점 -->
+                <GeometryDrawing Brush="{StaticResource Ubisam.Logo.MarkBrush}"
+                                 Geometry="{StaticResource Ubisam.Logo.Dot}"/>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+</ResourceDictionary>

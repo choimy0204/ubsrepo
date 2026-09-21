@@ -1,0 +1,116 @@
+<UserControl x:Class="UbisamBase.Core.Locking.LockOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Focusable="True"
+             IsVisibleChanged="LockOverlay_IsVisibleChanged">
+
+    <!-- PasswordBox는 Controls.xaml의 암시적 TextBox 스타일을 받지 못한다(다른 타입이라서) —
+         여기서 같은 모양으로 따로 정의한다. LockSettingsView.xaml에도 같은 정의가 있다 —
+         입력칸 모양을 바꿀 때는 두 곳을 함께 고쳐야 한다. -->
+    <UserControl.Resources>
+        <Style TargetType="PasswordBox">
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="FontFamily" Value="{DynamicResource Ubisam.Font.Body}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource Ubisam.Brush.Accent}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="Bd"
+                                Background="{DynamicResource Ubisam.Brush.Input.Background}"
+                                BorderBrush="{DynamicResource Ubisam.Brush.Input.Border}"
+                                BorderThickness="1.5"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"
+                                          Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Ubisam.Brush.Input.BorderHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Ubisam.Brush.Accent}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Ubisam.Brush.Input.DisabledBackground}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Ubisam.Brush.Input.DisabledBorder}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- 불투명 배경이 셸 전체를 덮어 아래 UI가 보이지도, 클릭되지도 않는다. -->
+    <Grid Background="{DynamicResource Ubisam.Brush.ContentBackground}"
+          TextElement.Foreground="{DynamicResource Ubisam.Brush.ContentForeground}">
+        <Border Width="360"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                BorderThickness="1"
+                Padding="28"
+                Effect="{StaticResource Ubisam.Effect.Popup}">
+            <StackPanel>
+                <Path Data="{StaticResource Ubisam.Icon.Lock}"
+                      Stroke="{DynamicResource Ubisam.Brush.Accent}"
+                      StrokeThickness="1.5"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round"
+                      Width="32" Height="32"
+                      HorizontalAlignment="Center"
+                      Margin="0,0,0,16"/>
+
+                <TextBlock Text="화면이 잠겼습니다"
+                           FontSize="18" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"
+                           Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+
+                <TextBlock Text="아이디" Margin="0,0,0,6"/>
+                <TextBox x:Name="IdBox" Foreground="{DynamicResource Ubisam.Brush.ContentForeground}" Margin="0,0,0,14"/>
+
+                <TextBlock Text="비밀번호" Margin="0,0,0,6"/>
+                <PasswordBox x:Name="PasswordBoxInput" Foreground="{DynamicResource Ubisam.Brush.ContentForeground}" Margin="0,0,0,10"/>
+
+                <TextBlock x:Name="ErrorText"
+                           Foreground="{DynamicResource Ubisam.Brush.Danger}"
+                           TextWrapping="Wrap"
+                           FontSize="12.5"
+                           Margin="0,0,0,14"
+                           Visibility="Collapsed"/>
+
+                <Button x:Name="UnlockButton"
+                        Content="잠금 해제"
+                        Style="{StaticResource Ubisam.Style.Button.Primary}"
+                        IsDefault="True"
+                        HorizontalAlignment="Stretch"
+                        Click="Unlock_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 강제 잠금 해제 — 눈에 잘 안 띄게 구석에, 작고 흐린 글자로만. 비밀번호 확인 없이 바로 풀린다. -->
+        <Button Content="강제 잠금 해제"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,12,8"
+                Padding="6,4"
+                FontSize="10"
+                Foreground="{DynamicResource Ubisam.Brush.Muted}"
+                Style="{StaticResource Ubisam.Style.Button.Ghost}"
+                Click="ForceUnlock_Click"/>
+    </Grid>
+</UserControl>

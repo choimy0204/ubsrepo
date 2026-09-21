@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>UbisamBase.Launcher</RootNamespace>
+    <AssemblyName>UbisamBase.Launcher</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Shell을 이 프로세스 안에서 로드해 띄우므로, WPF Application/MessageBox가 필요하다. -->
+    <UseWPF>true</UseWPF>
+    <!-- 프로세스가 Launcher.exe라 작업표시줄 아이콘도 이쪽을 따라간다 - Shell과 같은 아이콘을 쓴다. -->
+    <ApplicationIcon>..\UbisamBase.Shell\AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+</Project>

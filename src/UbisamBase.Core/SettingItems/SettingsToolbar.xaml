@@ -1,0 +1,38 @@
+<!-- 설정 화면 공용 도구 모음: 새로고침 + 저장, 둘 다 accent 채움(파란) 버튼.
+     DataContext를 따로 지정하지 않아 이 컨트롤을 놓는 화면의 ViewModel을 그대로 물려받는다 —
+     그 ViewModel이 RefreshCommand/SaveCommand([RelayCommand] private void Refresh()/Save())만
+     가지고 있으면 어디든 <local:SettingsToolbar/> 한 줄로 통일된 툴바가 생긴다. -->
+<UserControl x:Class="UbisamBase.Core.SettingItems.SettingsToolbar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Command="{Binding RefreshCommand}"
+                Style="{StaticResource Ubisam.Style.Button.Primary}"
+                Padding="14,6"
+                Margin="0,0,8,0"
+                AutomationProperties.Name="새로고침">
+            <StackPanel Orientation="Horizontal">
+                <Path Data="{StaticResource Ubisam.Icon.Reset}"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                      StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                <TextBlock Text="새로고침" Margin="6,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+        <Button Command="{Binding SaveCommand}"
+                Style="{StaticResource Ubisam.Style.Button.Primary}"
+                Padding="14,6"
+                AutomationProperties.Name="저장">
+            <StackPanel Orientation="Horizontal">
+                <Path Data="{StaticResource Ubisam.Icon.Save}"
+                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                      StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
+                <TextBlock Text="저장" Margin="6,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+    </StackPanel>
+</UserControl>

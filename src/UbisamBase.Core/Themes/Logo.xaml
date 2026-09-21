@@ -1,0 +1,18 @@
+<!-- 회사 로고(아이콘+워드마크 통합). 원본: .design/logo/Company/logo/ubisam_darkMode.png / ubisam_lightMode.png.
+     Ubisam.Logo.Dark/.Light는 고정 리소스이고, 실제로 화면에 쓰는 Ubisam.Logo는 UiSettingsService.ApplyTheme가
+     테마를 바꿀 때마다 Application.Resources에 둘 중 하나로 다시 꽂아준다 — 그래서 ShellWindow.xaml은
+     반드시 {DynamicResource Ubisam.Logo}로 참조해야 실시간으로 바뀐다({StaticResource}는 최초 1회만 고정). -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 원본이 3533×829px라 헤더에서는 30px 높이로 크게 축소해서 쓴다. DecodePixelHeight로 미리
+         적당한 해상도까지만 디코드해두고(전부 디코드 후 렌더 시점에 축소하면 더 무겁고 계단현상도 남는다),
+         ShellWindow.xaml의 Image에도 BitmapScalingMode=HighQuality를 같이 걸어야 매끈하게 나온다. -->
+    <BitmapImage x:Key="Ubisam.Logo.Dark"
+                 UriSource="pack://application:,,,/UbisamBase.Core;component/Themes/Assets/ubisam-dark.png"
+                 DecodePixelHeight="120"/>
+    <BitmapImage x:Key="Ubisam.Logo.Light"
+                 UriSource="pack://application:,,,/UbisamBase.Core;component/Themes/Assets/ubisam-light.png"
+                 DecodePixelHeight="120"/>
+
+</ResourceDictionary>

@@ -1,0 +1,87 @@
+<Window x:Class="UbisamBase.Core.Messaging.MessageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="420"
+        SizeToContent="Height"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource Ubisam.Brush.ContentBackground}"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <!-- 별도 창이라 셸의 리소스를 자동 상속받지 못한다 — ShellStyles.xaml(=Icons/Controls/Logo)을 직접 머지한다. -->
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/UbisamBase.Core;component/Themes/ShellStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}" BorderThickness="1">
+        <DockPanel TextElement.Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"
+                   TextElement.FontFamily="{StaticResource Ubisam.Font.Body}"
+                   TextElement.FontSize="14">
+
+            <!-- 제목줄: 끌어서 창 이동 -->
+            <Border x:Name="TitleBar"
+                    DockPanel.Dock="Top"
+                    Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                    BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                    BorderThickness="0,0,0,1"
+                    Padding="16,10"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock x:Name="TitleText"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+            </Border>
+
+            <!-- 버튼줄: 확인/예가 주 동작(accent 채움), 아니오가 보조(외곽선) -->
+            <Border DockPanel.Dock="Bottom"
+                    Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                    BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,12">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="SecondaryButton"
+                            Content="아니오"
+                            MinWidth="84"
+                            Padding="14,7"
+                            Margin="0,0,8,0"
+                            Click="Secondary_Click"/>
+                    <Button x:Name="PrimaryButton"
+                            Content="확인"
+                            Style="{StaticResource Ubisam.Style.Button.Primary}"
+                            MinWidth="84"
+                            Padding="14,7"
+                            IsDefault="True"
+                            Click="Primary_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 본문: 아이콘 24px(상단 정렬) + 메시지 -->
+            <Grid Margin="20,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Path x:Name="IconPath"
+                      Grid.Column="0"
+                      Width="24" Height="24"
+                      StrokeThickness="1.5"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round"
+                      VerticalAlignment="Top"
+                      Margin="0,0,14,0"/>
+
+                <TextBlock x:Name="MessageText"
+                           Grid.Column="1"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Top"
+                           Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+            </Grid>
+        </DockPanel>
+    </Border>
+</Window>

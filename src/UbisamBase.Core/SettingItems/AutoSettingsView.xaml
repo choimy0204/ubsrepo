@@ -1,0 +1,114 @@
+<UserControl x:Class="UbisamBase.Core.SettingItems.AutoSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UbisamBase.Core.SettingItems"
+             mc:Ignorable="d">
+    <DockPanel>
+        <local:SettingsToolbar DockPanel.Dock="Top" Margin="0,0,0,16"/>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="{Binding Category}"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Ubisam.Brush.Accent}"
+                                       Margin="0,4,0,10"
+                                       Visibility="{Binding HasCategory, Converter={StaticResource BoolToVis}}"/>
+
+                            <ItemsControl ItemsSource="{Binding Fields}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- 라벨 칸은 200으로 고정이라, 긴 이름은 줄바꿈해야 오른쪽 입력칸과 겹치지 않는다. -->
+                                            <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,12,0"
+                                                       VerticalAlignment="Center"/>
+
+                                            <CheckBox Grid.Column="1"
+                                                      IsChecked="{Binding Value, Mode=TwoWay}"
+                                                      IsEnabled="{Binding IsEditable}"
+                                                      Visibility="{Binding IsBool, Converter={StaticResource BoolToVis}}"
+                                                      VerticalAlignment="Center"/>
+
+                                            <!-- 입력칸 안쪽 여백은 테마 기본값(Controls.xaml)을 그대로 쓴다 — 여기서 따로 주면
+                                                 날짜 칸(DatePicker)과 글자 시작 위치가 어긋난다. -->
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     IsEnabled="{Binding IsEditable}"
+                                                     local:NumericInputBehavior.Mode="Integer"
+                                                     HorizontalAlignment="Left"
+                                                     MinWidth="160"
+                                                     Visibility="{Binding IsInt, Converter={StaticResource BoolToVis}}"/>
+
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     IsEnabled="{Binding IsEditable}"
+                                                     local:NumericInputBehavior.Mode="Decimal"
+                                                     HorizontalAlignment="Left"
+                                                     MinWidth="160"
+                                                     Visibility="{Binding IsDecimal, Converter={StaticResource BoolToVis}}"/>
+
+                                            <DatePicker Grid.Column="1"
+                                                        SelectedDate="{Binding Value, Mode=TwoWay}"
+                                                        IsEnabled="{Binding IsEditable}"
+                                                        HorizontalAlignment="Left"
+                                                        MinWidth="160"
+                                                        Visibility="{Binding IsDateTime, Converter={StaticResource BoolToVis}}"/>
+
+                                            <!-- Enum: 선택지가 몇 개 안 되는 값이라 드롭다운보다 한눈에 보이는 라디오가 낫다. -->
+                                            <ItemsControl Grid.Column="1"
+                                                          ItemsSource="{Binding EnumOptions}"
+                                                          IsEnabled="{Binding IsEditable}"
+                                                          VerticalAlignment="Center"
+                                                          Visibility="{Binding IsEnum, Converter={StaticResource BoolToVis}}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <RadioButton Content="{Binding Label}"
+                                                                     GroupName="{Binding GroupName}"
+                                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                     Margin="0,2,24,2"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     IsEnabled="{Binding IsEditable}"
+                                                     Visibility="{Binding IsText, Converter={StaticResource BoolToVis}}"/>
+
+                                            <DataGrid Grid.Column="1"
+                                                      ItemsSource="{Binding Value}"
+                                                      AutoGenerateColumns="True"
+                                                      CanUserAddRows="True"
+                                                      CanUserDeleteRows="True"
+                                                      IsReadOnly="False"
+                                                      Height="180"
+                                                      MaxWidth="640"
+                                                      HorizontalAlignment="Left"
+                                                      Visibility="{Binding IsCollection, Converter={StaticResource BoolToVis}}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

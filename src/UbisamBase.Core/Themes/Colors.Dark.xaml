@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 다크: 검정이 아니라 차가운 회색 바탕 + 회사 하늘색.
+         판(#2A2E34)이 바탕(#23262B)보다 한 단계 밝아 층이 구분된다.
+         accent는 두 단계로 쓴다 — 선·글자·밑줄은 밝은 #4DA6F5, 글자를 얹는 채움면은
+         깊은 #1E7FD4 + 흰 글자(#F2F7FC). 밝은 단계에 검은 글자를 얹지 않는다. -->
+    <SolidColorBrush x:Key="Ubisam.Brush.ContentBackground" Color="#FF23262B"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.ContentForeground" Color="#FFE8EAED"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent" Color="#FF4DA6F5"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent.Fill" Color="#FF1E7FD4"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Accent.OnFill" Color="#FFF2F7FC"/>
+
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.Background" Color="#FF2A2E34"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.Foreground" Color="#FFC2C7CE"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.HoverBackground" Color="#16FFFFFF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.SelectedBackground" Color="#1A4DA6F5"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Sidebar.SelectedForeground" Color="#FF4DA6F5"/>
+
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Background" Color="#FF2A2E34"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Border" Color="#FF3A3F47"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.Foreground" Color="#FFC2C7CE"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.HoverBackground" Color="#16FFFFFF"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.SelectedBackground" Color="#FF1E7FD4"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.SubTabBar.SelectedForeground" Color="#FFF2F7FC"/>
+
+    <!-- 입력 컨트롤 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.Background" Color="#FF2F343A"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.Border" Color="#FF747C87"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.BorderHover" Color="#FF8A93A0"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.DisabledBackground" Color="#FF292D32"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Input.DisabledBorder" Color="#FF383D44"/>
+    <Color x:Key="Ubisam.Color.AccentGlow">#FF4DA6F5</Color>
+
+    <!-- 표 — 어두운 배경일수록 같은 밝기 차이가 덜 도드라져 보이므로(사람 눈이 저휘도 영역에서
+         명도 차를 덜 민감하게 느낌), 라이트 테마와 같은 절대값 차이로는 부족하다. 배경(#2F343A)
+         대비 RowBorder/GridLine은 +22~28, AltRowBackground는 +9~14 정도 띄워서 실제로 구분되게 했다
+         (원래 값은 +4~10에 그쳐 다크 모드에서 그리드/줄무늬가 거의 안 보였다). -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.HeaderBackground" Color="#FF2F343A"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.RowBorder" Color="#FF454C56"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.GridLine" Color="#FF454C56"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Table.AltRowBackground" Color="#FF383F48"/>
+
+    <!-- 상태 태그 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.AccentBackground" Color="#FF123A5C"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.AccentForeground" Color="#FFA8D4FA"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.NeutralBackground" Color="#FF383D44"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Tag.NeutralForeground" Color="#FFC2C7CE"/>
+
+    <SolidColorBrush x:Key="Ubisam.Brush.Slot.Hatch" Color="#1A4DA6F5"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Muted" Color="#FF8A9099"/>
+
+    <!-- 오류 전용 — 대화상자 아이콘/실패 표시에만 쓴다 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Danger" Color="#FFF07070"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Danger.Fill" Color="#FFB33A3A"/>
+
+    <!-- 토스트 성공/실패(예외 아님) 전용 -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Success" Color="#FF5FC97E"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Warning" Color="#FFE0A63C"/>
+
+    <!-- 토스트 — 콘텐츠 위에 떠 있는 알림이라 바탕(#23262B)과 확실히 구분돼야 한다. 판 색(#2A2E34)을
+         그대로 쓰면 바탕과 거의 같아 묻히고, 검은 그림자도 어두운 바탕에선 안 보인다. 그래서 한 단계 더
+         밝은 면 + 또렷한 테두리 + 진한 그림자로 띄운다. -->
+    <SolidColorBrush x:Key="Ubisam.Brush.Toast.Background" Color="#FF3A414B"/>
+    <SolidColorBrush x:Key="Ubisam.Brush.Toast.Border" Color="#FF535B67"/>
+    <DropShadowEffect x:Key="Ubisam.Effect.Toast" BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.55" Color="#000000"/>
+
+</ResourceDictionary>

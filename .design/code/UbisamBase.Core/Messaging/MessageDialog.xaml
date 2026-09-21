@@ -1,0 +1,96 @@
+<Window x:Class="UbisamBase.Core.Messaging.MessageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        SizeToContent="Height"
+        Width="420"
+        MinHeight="0"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        AllowsTransparency="False"
+        Background="{DynamicResource Ubisam.Brush.ContentBackground}"
+        KeyDown="Dialog_KeyDown">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/UbisamBase.Core;component/Themes/ShellStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- OS 타이틀바 대신 1px 헤어라인 프레임. 셸과 같은 각진 도면 톤. -->
+    <Border BorderBrush="{DynamicResource Ubisam.Brush.Input.Border}"
+            BorderThickness="1"
+            TextElement.Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"
+            TextElement.FontFamily="{StaticResource Ubisam.Font.Body}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 제목줄: 드래그로 창을 옮길 수 있다 -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                    BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                    BorderThickness="0,0,0,1"
+                    Padding="20,14"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock x:Name="TitleText"
+                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                           FontFamily="{StaticResource Ubisam.Font.Heading}"
+                           FontSize="18"
+                           FontWeight="SemiBold"/>
+            </Border>
+
+            <!-- 본문: 아이콘 + 메시지 -->
+            <Grid Grid.Row="1" Margin="20,22">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Path x:Name="Icon"
+                      Grid.Column="0"
+                      Width="24" Height="24"
+                      Margin="0,1,15,0"
+                      Stretch="Uniform"
+                      StrokeThickness="1.5"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round"
+                      VerticalAlignment="Top"/>
+                <TextBlock x:Name="MessageText"
+                           Grid.Column="1"
+                           FontSize="13.5"
+                           LineHeight="21"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- 버튼: 우측 하단. 확인이 주 동작, 취소가 보조. -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                    BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                    BorderThickness="0,1,0,0"
+                    Padding="20,14">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="CancelButton"
+                            Content="취소"
+                            MinWidth="86"
+                            Visibility="Collapsed"
+                            Margin="0,0,9,0"
+                            Click="Cancel_Click"/>
+                    <Button x:Name="OkButton"
+                            Content="확인"
+                            MinWidth="86"
+                            IsDefault="True"
+                            Style="{StaticResource Ubisam.Style.Button.Primary}"
+                            Click="Ok_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

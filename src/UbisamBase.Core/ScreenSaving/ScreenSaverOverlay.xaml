@@ -1,0 +1,26 @@
+<UserControl x:Class="UbisamBase.Core.ScreenSaving.ScreenSaverOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UbisamBase.Core.ScreenSaving"
+             mc:Ignorable="d"
+             Focusable="True">
+
+    <!-- 반투명 스크림 — 아래 화면이 은은하게 비친다(화면 잠금과 달리 완전히 가리지 않음).
+         Background가 있어야 클릭/키 입력이 아래로 안 새고 여기서 막힌다. -->
+    <Grid Background="#B3000000">
+        <!-- MaxWidth를 고정값으로 주지 않고 화면 폭에서 여백만 뺀 만큼 채운다 —
+             그래야 "화면 밖으로 나갈 것 같을 때만" 줄바꿈된다. -->
+        <TextBlock Text="{Binding Message, Source={x:Static local:ScreenSaverService.Current}}"
+                   Foreground="{DynamicResource Ubisam.Brush.Accent}"
+                   FontFamily="{DynamicResource Ubisam.Font.Heading}"
+                   FontSize="44"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   Margin="100,0,100,0"/>
+    </Grid>
+</UserControl>
