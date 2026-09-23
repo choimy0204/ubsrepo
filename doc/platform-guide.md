@@ -509,9 +509,28 @@ public partial class DeckViewModel : ObservableObject, ICloseGuard
 
 - `Ubisam.Brush.*`, `Ubisam.Style.*`로 시작하는 리소스가 다크/라이트 테마 전체를 정의
   (`src/UbisamBase.Core/Themes/Colors.Dark.xaml`, `Colors.Light.xaml`, `Controls.xaml`).
-- `TextBox`/`ComboBox`/`CheckBox`/`Button`/`ToggleButton`/`DataGrid`는 전부 **암시적 스타일**
-  (`x:Key` 없음) — 그냥 `<Button>`, `<TextBox>`를 쓰면 자동으로 테마 적용됨. 예외 처리하려면
-  `Style="{x:Null}"`.
+- `TextBox`/`ComboBox`/`CheckBox`/`Button`/`ToggleButton`/`DataGrid`/`ContextMenu`/`MenuItem`은 전부
+  **암시적 스타일**(`x:Key` 없음) — 그냥 `<Button>`, `<TextBox>`, `<ContextMenu>`를 쓰면 자동으로
+  테마 적용됨. 예외 처리하려면 `Style="{x:Null}"`.
+- **우클릭 메뉴**도 그냥 달면 된다 — 판 색 + 1px 테두리, 항목은 강조 시 accent 색, 하위 메뉴·단축키
+  표시(`InputGestureText`)·체크 표시·구분선(`<Separator/>`)까지 테마를 따른다.
+
+```xml
+<Border.ContextMenu>
+    <ContextMenu>
+        <MenuItem Header="열기" Click="Open_Click"/>
+        <MenuItem Header="파일 경로 열기" Click="Reveal_Click"/>
+        <Separator/>
+        <MenuItem Header="삭제하기" Click="Delete_Click"/>
+    </ContextMenu>
+</Border.ContextMenu>
+```
+
+  - 메뉴 팝업은 그림자를 쓰지 않는다(`HasDropShadow="False"`) — 이 환경에서는 투명 팝업의 내용이
+    안 그려지기 때문이다(ComboBox 팝업과 같은 이유). 그림자 대신 테두리로 띄운다.
+  - **예외**: `TextBox`에서 오른쪽 클릭하면 나오는 기본 편집 메뉴(잘라내기/붙여넣기)는 WPF 내부
+    전용 타입이라 암시적 스타일이 닿지 않는다. 그 메뉴까지 맞추려면 그 컨트롤에 `ContextMenu`를
+    직접 달아야 한다.
 - 새 창(Window)을 별도로 띄울 땐(대화상자 등) `Window.Resources`에 `ShellStyles.xaml`을 다시
   merge해야 하고, 루트 컨테이너에 `TextElement.Foreground="{DynamicResource Ubisam.Brush.ContentForeground}"`를
   꼭 걸어야 함 — 안 그러면 스타일 없는 텍스트가 검정으로 보임(이 세션에서 실제로 겪은 버그).

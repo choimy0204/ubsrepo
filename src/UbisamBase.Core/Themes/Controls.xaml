@@ -1332,4 +1332,175 @@
         </Setter>
     </Style>
 
+    <!-- ══ 우클릭 메뉴(ContextMenu · MenuItem) ══
+         모듈이 그냥 <ContextMenu>를 달면 이 스타일이 자동으로 붙는다(암시적 스타일).
+
+         ContextMenu는 HasDropShadow="False"로 둔다 — True면 WPF가 팝업을 투명 창으로 만드는데,
+         이 환경에서는 투명 팝업의 내용이 안 그려진다(ComboBox 팝업에 적은 것과 같은 이유).
+         그래서 그림자 대신 판 색 + 1px 테두리로 떠 있는 느낌을 낸다.
+
+         주의: TextBox·RichTextBox에서 오른쪽 클릭했을 때 나오는 기본 편집 메뉴(잘라내기/붙여넣기)는
+         WPF 내부 전용 타입이라 암시적 스타일이 닿지 않는다. 그 메뉴까지 맞추려면 그 컨트롤에
+         ContextMenu를 직접 달아야 한다. -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource Ubisam.Brush.Sidebar.Background}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Ubisam.Brush.SubTabBar.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="FontFamily" Value="{DynamicResource Ubisam.Font.Body}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="HasDropShadow" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <!-- IsSharedSizeScope: 아이콘·체크 칸 너비를 항목끼리 맞춘다(글자 시작선이 들쭉날쭉하지 않게) -->
+                        <Grid Grid.IsSharedSizeScope="True">
+                            <ItemsPresenter/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource Ubisam.Brush.ContentForeground}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource Ubisam.Font.Body}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="5" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Ubisam.MenuIcon"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ContentPresenter x:Name="IconHost"
+                                              Grid.Column="0"
+                                              ContentSource="Icon"
+                                              Width="16" Height="16"
+                                              Margin="8,0,0,0"
+                                              VerticalAlignment="Center"/>
+
+                            <Path x:Name="CheckMark"
+                                  Grid.Column="0"
+                                  Data="M4,9 L7.5,12.5 L14,5"
+                                  Stroke="{DynamicResource Ubisam.Brush.Accent}"
+                                  StrokeThickness="1.7"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Width="16" Height="16"
+                                  Stretch="Uniform"
+                                  Margin="8,0,0,0"
+                                  VerticalAlignment="Center"
+                                  Visibility="Collapsed"/>
+
+                            <ContentPresenter Grid.Column="1"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center"/>
+
+                            <!-- 단축키 표시(InputGestureText) — 있을 때만 보인다 -->
+                            <TextBlock x:Name="GestureText"
+                                       Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Foreground="{DynamicResource Ubisam.Brush.Muted}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="14,0,6,0"/>
+
+                            <!-- 하위 메뉴 화살표 -->
+                            <Path x:Name="Arrow"
+                                  Grid.Column="3"
+                                  Data="M0,0 L4.5,4.5 L0,9"
+                                  Stroke="{DynamicResource Ubisam.Brush.Muted}"
+                                  StrokeThickness="1.5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  VerticalAlignment="Center"
+                                  Margin="4,0,10,0"
+                                  Visibility="Collapsed"/>
+
+                            <!-- 반드시 "PART_Popup"이어야 한다 — MenuItem이 이 이름으로 찾는다.
+                                 AllowsTransparency는 ComboBox 팝업과 같은 이유로 끈다. -->
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Right"
+                                   HorizontalOffset="-2"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                   AllowsTransparency="False"
+                                   Focusable="False"
+                                   PopupAnimation="None">
+                                <Border Background="{DynamicResource Ubisam.Brush.Sidebar.Background}"
+                                        BorderBrush="{DynamicResource Ubisam.Brush.SubTabBar.Border}"
+                                        BorderThickness="1"
+                                        Padding="5"
+                                        SnapsToDevicePixels="True">
+                                    <Grid Grid.IsSharedSizeScope="True">
+                                        <ItemsPresenter/>
+                                    </Grid>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom"/>
+                        </Trigger>
+                        <Trigger Property="InputGestureText" Value="">
+                            <Setter TargetName="GestureText" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="IconHost" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="IconHost" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <!-- 키보드·마우스 어느 쪽으로 옮겨와도 같은 강조를 쓴다(IsHighlighted) -->
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Ubisam.Brush.Sidebar.SelectedBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Ubisam.Brush.Sidebar.SelectedForeground}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource Ubisam.Brush.Muted}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 메뉴 안의 구분선 — 이 키로 등록해야 <Separator/>가 메뉴 안에서 이 모양을 쓴다. -->
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="8,5"/>
+        <Setter Property="Background" Value="{DynamicResource Ubisam.Brush.SubTabBar.Border}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Background="{TemplateBinding Background}" SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
